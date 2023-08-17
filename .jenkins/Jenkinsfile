@@ -1,12 +1,5 @@
 pipeline {
-    agent {
-          docker {
-              image 'maven:3.8.3-openjdk-17'
-              reuseNode true
-              registryUrl 'https://index.docker.io/v1/'
-              registryCredentialsId 'project-docker-token'
-          }
-    }
+    agent any
     environment {
         GC =  credentials('private-project')
         GIT_REPO = 'project'
@@ -19,9 +12,17 @@ pipeline {
     stages {
         
         stage('maven build, test, packageing(war)') {
-               steps{
-                    sh 'mvn clean install'
-              }  
+            agent {
+                  docker {
+                      image 'maven:3.8.3-openjdk-17'
+                      reuseNode true
+                      registryUrl 'https://index.docker.io/v1/'
+                      registryCredentialsId 'project-docker-token'
+                  }
+            }
+            steps{
+                sh 'mvn clean install'
+           }  
         }
         stage('github create release') {
             steps {
