@@ -65,5 +65,17 @@ pipeline {
                 }
             }
         }
-    }          
+        stage('docker Image Push') {
+            steps {
+                script {
+                    // Docker Hub에 로그인
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub') {
+                        def img = docker.image('자기계정/jenkins-test')
+                        img.push('latest')
+                        img.push('0.1')
+                    }
+                }
+            }
+        }
+    }
 }
