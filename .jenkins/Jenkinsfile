@@ -8,7 +8,7 @@ pipeline {
           }
     }
     environment {
-        GC =  credentials('private-project') // 생성해야 합니다.  
+        GC =  credentials('private-project')
         GIT_REPO = 'project'
         GIT_USERNAME = 'SEOMW'
         TAG_VERSION = 'v1.0.1'
