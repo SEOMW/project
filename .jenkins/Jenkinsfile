@@ -12,12 +12,6 @@ pipeline {
         GIT_REPO = 'project'
         GIT_USERNAME = 'SEOMW'
         TAG_VERSION = 'v1.0.0'
-        DOCKER_IMAGE_NAME = 'project' // Docker 이미지 이름
-        DOCKER_USERNAME = 'seomw' // Docker Hub 사용자 이름
-        DOCKER_PASSWORD = credentials('project-docker-token') // Docker Hub 액세스 토큰 또는 비밀번호
-        DOCKER_REGISTRY = 'https://index.docker.io/v1/' // Docker 레지스트리 URL
-        DOCKER_REGISTRY_USERNAME = 'seomw' // Docker 레지스트리 사용자 이름
-        DOCKER_REGISTRY_PASSWORD = credentials('project-docker-token') // Docker 레지스트리 액세스 토큰 또는 비밀번호
     }
     triggers {
          githubPush()   
@@ -28,24 +22,6 @@ pipeline {
                steps{
                     sh 'mvn clean install'
               }  
-        }
-        stage('create docker image') {
-            steps {
-                script {
-                    // 복사한 WAR 파일을 Docker 이미지의 작업 디렉토리로 이동
-                    sh "cp target/demo-0.0.1-SNAPSHOT.war ${DOCKER_IMAGE_NAME}.war"
-                    
-                    // Docker 이미지 빌드 및 업로드
-                    sh "docker build -t ${DOCKER_IMAGE_NAME}:${TAG_VERSION} ."
-                    sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
-                    sh "docker push ${DOCKER_IMAGE_NAME}:${TAG_VERSION}"
-                    
-                    // Docker 레지스트리에 이미지 업로드
-                    sh "docker login -u ${DOCKER_REGISTRY_USERNAME} -p ${DOCKER_REGISTRY_PASSWORD} ${DOCKER_REGISTRY}"
-                    sh "docker tag ${DOCKER_IMAGE_NAME}:${TAG_VERSION} ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${TAG_VERSION}"
-                    sh "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${TAG_VERSION}"
-                }
-            }
         }
         stage('github create release') {
             steps {
@@ -89,5 +65,17 @@ pipeline {
                 }
             }
         }
-    }          
+        stage('docker Image Push') {
+            steps {
+                script {
+                    // Docker Hub에 로그인
+                    docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
+                        def img = docker.image('seomw/private-project')
+                        img.push('latest')
+                        img.push('0.1')
+                    }
+                }
+            }
+        }
+    }
 }
