@@ -69,11 +69,12 @@ pipeline {
             steps {
                 script {
                     // Docker Hub에 로그인
-                    docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
-                        def img = docker.image('seomw/project')
-                        img.push('latest')
-                        img.push('0.1')
-                    }
+                    // docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
+                    //     def img = docker.image('seomw/project')
+                    //     img.push('latest')
+                    //     img.push('0.1')
+                    // }
+                    sh 'docker push seomw/project:latest'
                 }
             }
         }
