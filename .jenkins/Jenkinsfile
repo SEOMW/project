@@ -1,6 +1,7 @@
 pipeline {
     agent any
     environment {
+        
         GC =  credentials('private-project')
         GIT_REPO = 'project'
         GIT_USERNAME = 'SEOMW'
