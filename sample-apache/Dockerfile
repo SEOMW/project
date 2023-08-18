@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y apache2 git
 RUN git clone https://github.com/SEOMW/mycloud.git
-COPY ./sample-apache/ /var/www/html/
+RUN cp -r mycloud/* /var/www/html/
 CMD ["apachectl", "-D", "FOREGROUND"]
 
 # 컨테이너 내부의 80 포트와 연결
