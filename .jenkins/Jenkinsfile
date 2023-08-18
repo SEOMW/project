@@ -28,7 +28,7 @@ pipeline {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/SEOMW/project.git'
-                    credentialsId: 'private-project'
+                    // credentialsId: 'private-project'
             }
         }
         stage('Docker Build - httpd') {
