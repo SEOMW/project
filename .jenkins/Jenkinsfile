@@ -14,7 +14,7 @@ pipeline {
             steps {
                 git branch: 'main',
                     url: ' https://api.github.com/repos/${GIT_USERNAME}/${GIT_REPO}.git'
-                credentialsId: ${GC} // Move credentialsId inside the steps block
+                    credentialsId: 'private-project' // Move credentialsId inside the steps block
             }
         }
         stage('maven build, test, packageing(war)') {
