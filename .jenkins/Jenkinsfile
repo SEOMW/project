@@ -1,4 +1,3 @@
-* imsisave 
 pipeline {
     agent any
     environment {
