@@ -41,7 +41,9 @@ pipeline {
                         // 이미지를 태그하여 Docker Hub에 푸시
                         image.push('latest')
                         image.push(TAG_VERSION)
+
                     }
+                    sh 'docker build -t seomw/project ./sample-apache'
                 }
             }
         }
