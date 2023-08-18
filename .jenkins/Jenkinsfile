@@ -24,6 +24,13 @@ pipeline {
                 sh 'mvn clean install'
            }  
         }
+        stage('Github Clone & Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/SEOMW/project.git'
+                    // credentialsId: 'github-jenkins-cicd'
+            }
+        }
        stage('Docker Build - httpd') {
             steps {
                 script {
