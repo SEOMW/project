@@ -1,111 +1,15 @@
 pipeline {
     agent any
     environment {
-        GC =  credentials('private-project')
+        GC_PSW = credentials('github-token')
         GIT_REPO = 'project'
         GIT_USERNAME = 'SEOMW'
-        TAG_VERSION = 'v1.0.1'
     }
     triggers {
-         githubPush()   
+        githubPush()
     }
     stages {
-
-        stage('maven build, test, packageing(war)') {
-            agent {
-                  docker {
-                      image 'maven:3.8.3-openjdk-17'
-                      reuseNode true
-                      registryUrl 'https://index.docker.io/v1/'
-                      registryCredentialsId 'project-docker-token'
-                  }
-            }
-            steps{
-                sh 'mvn clean install'
-           }  
-        }
-        stage('Github Clone & Checkout') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/SEOMW/project.git'
-                    // credentialsId: 'github-jenkins-cicd'
-            }
-        }
-       stage('Docker Build - httpd') {
-            steps {
-                script {
-                    // Docker hub 에 로그인 하기 위해 사용
-                    docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
-                        // Dockerfile 로 이미지 생성
-                        def image = docker.build('seomw/project', './sample-apache')
-                        // 이미지를 태그하여 Docker Hub에 푸시
-                        image.push('latest')
-                        image.push(TAG_VERSION)
-
-                    }
-                    sh 'docker build -t seomw/project-apache ./sample-apache'
-                }
-            }
-        }
-       stage('Docker Build - nginx') {
-            steps {
-                script {
-                    // Docker hub 에 로그인 하기 위해 사용
-                    docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
-                        // Dockerfile 로 이미지 생성
-                        def image = docker.build('seomw/project', './sample-nginx')
-                        // 이미지를 태그하여 Docker Hub에 푸시
-                        image.push('latest')
-                        image.push(TAG_VERSION)
-
-                    }
-                    sh 'docker build -t seomw/project-nginx ./sample-nginx'
-                }
-            }
-        }
-        stage('github create release') {
-            steps {
-                script {
-                    def response = sh(script: """
-                        curl -sSL \
-                          -X POST \
-                          -H 'Accept: application/vnd.github+json' \
-                          -H 'Authorization: Bearer ${GC_PSW}' \
-                          -H 'X-GitHub-Api-Version: 2022-11-28' \
-                          https://api.github.com/repos/${GIT_USERNAME}/${GIT_REPO}/releases \
-                          -d '{
-                                  "tag_name":"${TAG_VERSION}",
-                                  "target_commitish":"main",
-                                  "name":"Release ${TAG_VERSION}",
-                                  "body":"Description of the release",
-                                  "draft":false,
-                                  "prerelease":false,
-                                  "generate_release_notes":false
-                              }'
-                    """, returnStdout: true) //스크립트 실행 후 출력 결과를 response 변수에 저장
-
-                    sh "echo '$response'"
-
-                    def json = readJSON text: "$response"
-                    def id = json.id
-
-                    sh "mv target/demo-0.0.1-SNAPSHOT.war ${GIT_REPO}-${TAG_VERSION}.war"
-
-                    sh """
-                        curl -L \
-                              -X POST \
-                              -H "Accept: application/vnd.github+json" \
-                              -H "Authorization: Bearer ${GC_PSW}" \
-                              -H "X-GitHub-Api-Version: 2022-11-28" \
-                              -H "Content-Type: application/octet-stream" \
-                              "https://uploads.github.com/repos/${GIT_USERNAME}/${GIT_REPO}/releases/${id}/assets?name=${GIT_REPO}-${TAG_VERSION}.war" \
-                              --data-binary "@${GIT_REPO}-${TAG_VERSION}.war"
-                    """
-                    
-                }
-            }
-        }
-        stage('docker Image Push') {
+        stage('Docker Image Build & Push') {
             steps {
                 script {
                     // 이전 버전 읽기
@@ -117,13 +21,37 @@ pipeline {
                     // 버전 파일 업데이트
                     writeFile file: 'version.txt', text: new_version.toString()
                     
-                    // Docker Hub에 로그인
+                    // Docker 이미지 빌드 및 푸시
                     docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
-                        def img = docker.image('seomw/project')
+                        def img = docker.build("seomw/${GIT_REPO}", '.')
                         img.push('latest')
                         img.push(new_version.toString())
                     }
-                    //sh 'docker push seomw/project:latest'
+                }
+            }
+        }
+        stage('GitHub Release') {
+            steps {
+                script {
+                    def response = sh(script: """
+                        curl -sSL \
+                          -X POST \
+                          -H 'Accept: application/vnd.github+json' \
+                          -H 'Authorization: Bearer ${GC_PSW}' \
+                          -H 'X-GitHub-Api-Version: 2022-11-28' \
+                          https://api.github.com/repos/${GIT_USERNAME}/${GIT_REPO}/releases \
+                          -d '{
+                                  "tag_name":"v${new_version.toString()}",
+                                  "target_commitish":"main",
+                                  "name":"Release v${new_version.toString()}",
+                                  "body":"Description of the release",
+                                  "draft":false,
+                                  "prerelease":false,
+                                  "generate_release_notes":false
+                              }'
+                    """, returnStdout: true)
+                    
+                    sh "echo '$response'"
                 }
             }
         }
