@@ -1,19 +1,10 @@
 pipeline {
     agent any
     environment {
-                            // 이전 버전 읽기
-                    def current_version = readFile('version.txt').trim() as Integer
-                    
-                    // 새로운 버전 계산
-                    def new_version = current_version + 1
-                    
-                    // 버전 파일 업데이트
-                    writeFile file: 'version.txt', text: new_version.toString()
-        
         GC =  credentials('private-project')
         GIT_REPO = 'project'
         GIT_USERNAME = 'SEOMW'
-        TAG_VERSION = 'new_version.toString()'
+        TAG_VERSION = 'v1.0.0'
     }
     triggers {
          githubPush()   
