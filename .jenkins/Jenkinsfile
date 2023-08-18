@@ -14,6 +14,7 @@ pipeline {
             steps {
                 git branch: 'main',
                     url: ' https://github.com/${GIT_USERNAME}/${GIT_REPO}.git'
+                credentialsID: 'private-project'
             }
         }
         stage('maven build, test, packageing(war)') {
