@@ -10,7 +10,13 @@ pipeline {
          githubPush()   
     }
     stages {
-        
+        stage('Github Clone & Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/SEOMW/project.git'
+                credentialsId('private-project') // Move credentialsId inside the steps block
+            }
+        }
         stage('maven build, test, packageing(war)') {
             agent {
                   docker {
@@ -23,13 +29,6 @@ pipeline {
             steps{
                 sh 'mvn clean install'
            }  
-        }
-        stage('Github Clone & Checkout') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/SEOMW/project.git'
-                credentialsId('private-project') // Move credentialsId inside the steps block
-            }
         }
         stage('Docker Build - httpd') {
             steps {
