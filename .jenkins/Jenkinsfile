@@ -1,9 +1,20 @@
+* imsisave 
 pipeline {
     agent any
     environment {
+                            // 이전 버전 읽기
+                    def current_version = readFile('version.txt').trim() as Integer
+                    
+                    // 새로운 버전 계산
+                    def new_version = current_version + 1
+                    
+                    // 버전 파일 업데이트
+                    writeFile file: 'version.txt', text: new_version.toString()
+        
         GC =  credentials('private-project')
         GIT_REPO = 'project'
         GIT_USERNAME = 'SEOMW'
+        TAG_VERSION = 'new_version.toString()'
     }
     triggers {
          githubPush()   
@@ -65,15 +76,6 @@ pipeline {
         stage('github create release') {
             steps {
                 script {
-                                        // 이전 버전 읽기
-                    def current_version = readFile('version.txt').trim() as Integer
-                    
-                    // 새로운 버전 계산
-                    def new_version = current_version + 1
-                    
-                    // 버전 파일 업데이트
-                    writeFile file: 'version.txt', text: new_version.toString()
-                    
                     def response = sh(script: """
                         curl -sSL \
                           -X POST \
@@ -84,7 +86,7 @@ pipeline {
                           -d '{
                                   "tag_name":"${TAG_VERSION}",
                                   "target_commitish":"main",
-                                  "name":"Release (new_version.toString)",
+                                  "name":"Release ${TAG_VERSION}",
                                   "body":"Description of the release",
                                   "draft":false,
                                   "prerelease":false,
@@ -97,7 +99,7 @@ pipeline {
                     def json = readJSON text: "$response"
                     def id = json.id
 
-                    sh "mv target/demo-0.0.1-SNAPSHOT.war ${GIT_REPO}-(new_version.toString).war"
+                    sh "mv target/demo-0.0.1-SNAPSHOT.war ${GIT_REPO}-${TAG_VERSION}.war"
 
                     sh """
                         curl -L \
@@ -106,8 +108,8 @@ pipeline {
                               -H "Authorization: Bearer ${GC_PSW}" \
                               -H "X-GitHub-Api-Version: 2022-11-28" \
                               -H "Content-Type: application/octet-stream" \
-                              "https://uploads.github.com/repos/${GIT_USERNAME}/${GIT_REPO}/releases/${id}/assets?name=${GIT_REPO}-(new_version.toString).war" \
-                              --data-binary "@${GIT_REPO}-(new_version.toString).war"
+                              "https://uploads.github.com/repos/${GIT_USERNAME}/${GIT_REPO}/releases/${id}/assets?name=${GIT_REPO}-${TAG_VERSION}.war" \
+                              --data-binary "@${GIT_REPO}-${TAG_VERSION}.war"
                     """
                     
                 }
