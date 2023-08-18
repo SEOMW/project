@@ -5,7 +5,7 @@ pipeline {
         GC =  credentials('private-project')
         GIT_REPO = 'project'
         GIT_USERNAME = 'SEOMW'
-        TAG_VERSION = 'v1.0.0'
+
     }
     triggers {
          githubPush()   
@@ -35,13 +35,16 @@ pipeline {
        stage('Docker Build - httpd') {
             steps {
                 script {
+                    def buildNumber = env.BUILD_NUMBER
+                    def imageTag = "v${buildNumber}"
+                    
                     // Docker hub 에 로그인 하기 위해 사용
                     docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
                         // Dockerfile 로 이미지 생성
                         def image = docker.build('seomw/project', './sample-apache')
                         // 이미지를 태그하여 Docker Hub에 푸시
                         image.push('latest')
-                        image.push(TAG_VERSION)
+                        image.push(imageTag)
 
                     }
                     sh 'docker build -t seomw/project-apache ./sample-apache'
@@ -51,13 +54,16 @@ pipeline {
        stage('Docker Build - nginx') {
             steps {
                 script {
+                    def buildNumber = env.BUILD_NUMBER
+                    def imageTag = "v${buildNumber}"
+
                     // Docker hub 에 로그인 하기 위해 사용
                     docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
                         // Dockerfile 로 이미지 생성
                         def image = docker.build('seomw/project', './sample-nginx')
                         // 이미지를 태그하여 Docker Hub에 푸시
                         image.push('latest')
-                        image.push(TAG_VERSION)
+                        image.push(imageTag)
 
                     }
                     sh 'docker build -t seomw/project-nginx ./sample-nginx'
@@ -67,6 +73,9 @@ pipeline {
         stage('github create release') {
             steps {
                 script {
+                    def buildNumber = env.BUILD_NUMBER
+                    def releaseTag = "v${buildNumber}"
+                    
                     def response = sh(script: """
                         curl -sSL \
                           -X POST \
@@ -77,7 +86,7 @@ pipeline {
                           -d '{
                                   "tag_name":"${TAG_VERSION}",
                                   "target_commitish":"main",
-                                  "name":"Release ${TAG_VERSION}",
+                                  "name":"Release ${releaseTag}",
                                   "body":"Description of the release",
                                   "draft":false,
                                   "prerelease":false,
@@ -90,7 +99,7 @@ pipeline {
                     def json = readJSON text: "$response"
                     def id = json.id
 
-                    sh "mv target/demo-0.0.1-SNAPSHOT.war ${GIT_REPO}-${TAG_VERSION}.war"
+                    sh "mv target/demo-0.0.1-SNAPSHOT.war ${GIT_REPO}-${releaseTag}.war"
 
                     sh """
                         curl -L \
@@ -99,8 +108,8 @@ pipeline {
                               -H "Authorization: Bearer ${GC_PSW}" \
                               -H "X-GitHub-Api-Version: 2022-11-28" \
                               -H "Content-Type: application/octet-stream" \
-                              "https://uploads.github.com/repos/${GIT_USERNAME}/${GIT_REPO}/releases/${id}/assets?name=${GIT_REPO}-${TAG_VERSION}.war" \
-                              --data-binary "@${GIT_REPO}-${TAG_VERSION}.war"
+                              "https://uploads.github.com/repos/${GIT_USERNAME}/${GIT_REPO}/releases/${id}/assets?name=${GIT_REPO}-${releaseTag}.war" \
+                              --data-binary "@${GIT_REPO}-${releaseTag}.war"
                     """
                     
                 }
@@ -109,12 +118,14 @@ pipeline {
         stage('docker Image Push') {
             steps {
                 script {
+                    def buildNumber = env.BUILD_NUMBER
+                    def imageTag = "v${buildNumber}"
                     
                     // Docker Hub에 로그인
                     docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
                         def img = docker.image('seomw/project')
                         img.push('latest')
-                        img.push('TAG_VERSION')
+                        img.push(imageTag)
                     }
                     //sh 'docker push seomw/project:latest'
                 }
