@@ -4,7 +4,7 @@ pipeline {
         GC =  credentials('private-project')
         GIT_REPO = 'project'
         GIT_USERNAME = 'SEOMW'
-        TAG_VERSION = 'v1.0.2'
+        TAG_VERSION = 'v1.0.1'
     }
     triggers {
          githubPush()   
@@ -43,7 +43,7 @@ pipeline {
                         image.push(TAG_VERSION)
 
                     }
-                    sh 'docker build -t seomw/project ./sample-apache'
+                    sh 'docker build -t seomw/project-apache ./sample-apache'
                 }
             }
         }
@@ -59,7 +59,7 @@ pipeline {
                         image.push(TAG_VERSION)
 
                     }
-                    sh 'docker build -t seomw/project ./sample-nginx'
+                    sh 'docker build -t seomw/project-nginx ./sample-nginx'
                 }
             }
         }
@@ -108,11 +108,20 @@ pipeline {
         stage('docker Image Push') {
             steps {
                 script {
+                    // 이전 버전 읽기
+                    def current_version = readFile('version.txt').trim() as Integer
+                    
+                    // 새로운 버전 계산
+                    def new_version = current_version + 1
+                    
+                    // 버전 파일 업데이트
+                    writeFile file: 'version.txt', text: new_version.toString()
+                    
                     // Docker Hub에 로그인
                     docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
                         def img = docker.image('seomw/project')
                         img.push('latest')
-                        img.push('0.1')
+                        img.push(new_version.toString())
                     }
                     //sh 'docker push seomw/project:latest'
                 }
