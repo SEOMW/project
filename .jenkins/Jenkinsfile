@@ -24,13 +24,16 @@ pipeline {
                 sh 'mvn clean install'
            }  
         }
-        stage('Docker Build - httpd') {
+       stage('Docker Build - httpd') {
             steps {
                 script {
                     // Docker hub 에 로그인 하기 위해 사용
                     docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
                         // Dockerfile 로 이미지 생성
-                        docker.build('seomw/project', './sample-apache')
+                        def image = docker.build('seomw/project', './sample-apache')
+                        // 이미지를 태그하여 Docker Hub에 푸시
+                        image.push('latest')
+                        image.push(TAG_VERSION)
                     }
                 }
             }
