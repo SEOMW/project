@@ -47,7 +47,6 @@ pipeline {
                         image.push(imageTag)
 
                     }
-                    sh 'docker build -t seomw/project-apache ./sample-apache'
                 }
             }
         }
