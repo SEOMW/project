@@ -13,7 +13,7 @@ pipeline {
         stage('Github Clone & Checkout') {
             steps {
                 git branch: 'main',
-                    url: ' https://api.github.com/repos/${GIT_USERNAME}/${GIT_REPO}.git'
+                    url: ' https://github.com/${GIT_USERNAME}/${GIT_REPO}.git'
             }
         }
         stage('maven build, test, packageing(war)') {
