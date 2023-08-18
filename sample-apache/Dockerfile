@@ -1,4 +1,4 @@
-FROM apache2:latest
+FROM httpd:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
