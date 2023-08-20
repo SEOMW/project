@@ -47,6 +47,7 @@ pipeline {
                         image.push(imageTag)
 
                     }
+                    sh 'docker run -d -p 80:80 --name project-apache seomw/project-apache
                 }
             }
         }
@@ -65,7 +66,8 @@ pipeline {
                         image.push(imageTag)
 
                     }
-                    sh 'docker build -t seomw/project-nginx ./sample-nginx'
+                    sh 'docker run -d -p 80:80 --name project-nginx seomw/project-nginx
+'
                 }
             }
         }
