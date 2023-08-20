@@ -67,7 +67,6 @@ pipeline {
 
                     }
                     sh 'docker run -d -p 80:80 --name project-nginx seomw/project-nginx'
-'
                 }
             }
         }
