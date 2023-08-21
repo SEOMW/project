@@ -39,7 +39,7 @@ pipeline {
                     // 소나큐브 스캐너 실행
                     withSonarQubeEnv('Your_SonarQube_Server') {
                         sh "${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=${GIT_REPO} \
+                            -Dsonar.projectKey=project \
                             -Dsonar.host.url=http://192.168.10.14:9000 \
                             -Dsonar.login=sqp_7c14498b4a5c80a458893193bb40794774820e43"
                     }
