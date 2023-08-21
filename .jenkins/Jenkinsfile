@@ -37,7 +37,7 @@ pipeline {
                     def imageTag = "v${buildNumber}"
         
                     // 소나큐브 스캐너 실행
-                    withSonarQubeEnv('Your_SonarQube_Server') {
+                    withSonarQubeEnv('projectsonar') {
                         sh "${scannerHome}/bin/sonar-scanner \
                             -Dsonar.projectKey=project01 \
                             -Dsonar.host.url=http://192.168.10.14:9000 \
