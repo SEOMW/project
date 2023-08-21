@@ -32,11 +32,8 @@ pipeline {
         stage('Testing & QC') {
             steps {
                 script {
-                    def mavenHome = tool name: 'Maven', type: 'hudson.tasks.Maven$MavenInstallation'
-                    def mavenCmd = "${mavenHome}/bin/mvn"
-                    
-                    docker.image('maven:3.8.3-openjdk-17').inside {
-                        sh "${mavenCmd} verify sonar:sonar -Dsonar.java.source=17 -Dsonar.projectKey=Project01 -Dsonar.sources=src/main/ -Dsonar.tests=src/test/ -Dsonar.java.binaries=target -Dsonar.host.url=http://192.168.10.14:9000"
+                    withSonarQubeEnv {
+                            sh 'mvn verify sonar:sonar -Dsonar.java.source=17 -Dsonar.projectKey=Project01 -Dsonar.sources=src/main/ -Dsonar.tests=src/test/ -Dsonar.java.binaries=target -Dsonar.host.url=http://192.168.10.14:9000'
                     }
                 }
                 timeout(time: 1, unit: 'MINUTES') {
