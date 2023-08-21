@@ -35,7 +35,7 @@ pipeline {
                     docker.image('sonarsource/sonar-scanner-cli').inside('-e SONAR_HOST_URL="http://192.168.10.14:9000"') {
                         sh '''
                             sonar-scanner \
-                            -Dsonar.projectKey=project01-token \
+                            -Dsonar.projectKey=project01 \
                             -Dsonar.login=sqp_a1000e5c0a255858e7aad273bfa527386c647c01
                         '''
                     }
