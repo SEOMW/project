@@ -36,7 +36,7 @@ pipeline {
                         sh '''
                             sonar-scanner \
                             -Dsonar.projectKey=project01 \
-                            -Dsonar.login=sqp_7c14498b4a5c80a458893193bb40794774820e43
+                            -Dsonar.login=sqp_d5bc41f530699e39209b3599f9ce69406c0732a8
                         '''
                     }
                 }
