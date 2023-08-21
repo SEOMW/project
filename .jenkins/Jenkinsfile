@@ -34,15 +34,11 @@ pipeline {
                 script {
                     def scannerHome = tool 'SonarQubeScanner'
                     def buildNumber = env.BUILD_NUMBER
-                    def imageTag = "v${buildNumber}"
         
-                    // 소나큐브 스캐너 실행
-                    withSonarQubeEnv('projectsonar') {
-                        sh "${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=project01 \
-                            -Dsonar.host.url=http://192.168.10.14:9000 \
-                            -Dsonar.login=sqp_7c14498b4a5c80a458893193bb40794774820e43"
-                    }
+                    sh "${scannerHome}/bin/sonar-scanner \
+                        -Dsonar.projectKey=project01 \
+                        -Dsonar.host.url=http://192.168.10.14:9000 \
+                        -Dsonar.login=sqp_7c14498b4a5c80a458893193bb40794774820e43"
                 }
             }
         }
