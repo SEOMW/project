@@ -8,7 +8,7 @@ pipeline {
     triggers {
         githubPush()
     }
-    stages {
+  //  stages {
         stage('maven build, test, packageing(war)') {
             agent {
                 docker {
