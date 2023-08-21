@@ -8,8 +8,8 @@ pipeline {
     triggers {
         githubPush()
     }
-  //  stages {
-        stage('maven build, test, packageing(war)') {
+    stages {
+      //  stage('maven build, test, packageing(war)') {
             agent {
                 docker {
                     image 'maven:3.8.3-openjdk-17'
