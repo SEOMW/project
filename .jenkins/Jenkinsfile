@@ -29,16 +29,17 @@ pipeline {
                     // credentialsId: 'github-jenkins-cicd'
             }
         }
-        stage('SonarQube Scan') {
+        stage('Testing & QC') {
             steps {
                 script {
-                    docker.image('sonarsource/sonar-scanner-cli').inside('-e SONAR_HOST_URL="http://192.168.10.14:9000"') {
-                        sh '''
-                            sonar-scanner \
-                            -Dsonar.projectKey=project01 \
-                            -Dsonar.login=sqp_a1000e5c0a255858e7aad273bfa527386c647c01
-                        '''
+                    withSonarQubeEnv {
+                            sh "mvn verify sonar:sonar -Dsonar.java.source=17
+                            -Dsonar.projectKey=Project01 -Dsonar.sources=src/main/ -Dsonar.tests=src/test/
+                            -Dsonar.java.binaries=target"
                     }
+                }
+                timeout(time: 1, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
