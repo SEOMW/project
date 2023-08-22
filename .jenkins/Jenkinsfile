@@ -29,7 +29,10 @@ pipeline {
             }
             steps {
                 script {
-                    withSonarQubeEnv('projectsonar') {
+                    def buildNumber = env.BUILD_NUMBER
+                    def imageTag = "v${buildNumber}"
+                    
+                    withSonarQubeEnv('SonarQube Server') {
                         sh 'mvn clean install -e'
                         
                         sh 'docker run \
@@ -47,7 +50,6 @@ pipeline {
                 }
             }
         }
-
         stage('Docker Build - httpd') {
             steps {
                 script {
