@@ -8,12 +8,6 @@ pipeline {
     triggers {
         githubPush()
     }
-    stages {
-        stage('Clean Up Previous Build') {
-            steps {
-                sh 'sudo rm -rf /var/jenkins_home/workspace/project/target'
-            }
-        }
         stage('Build, Test, SonarQube Analysis') {
             agent {
                 docker {
