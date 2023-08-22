@@ -16,6 +16,7 @@ pipeline {
                     reuseNode true
                     registryUrl 'https://index.docker.io/v1/'
                     registryCredentialsId 'project-docker-token'
+                    inside '-u root'
                 }
             }
             steps {
@@ -32,8 +33,6 @@ pipeline {
         stage('Testing & QC') {
             steps {
                 script {
-                    docker.image('maven:3.8.3-openjdk-17').inside('-u root') {
-                        sh 'mvn clean install'
                         sh 'sonar-scanner -Dsonar.projectKey=Project01 -Dsonar.sources=src/main/ -Dsonar.tests=src/test/ -Dsonar.java.binaries=target -Dsonar.host.url=http://192.168.10.14:9000'
                     }
                 }
