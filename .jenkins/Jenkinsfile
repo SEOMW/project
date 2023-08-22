@@ -78,7 +78,7 @@ pipeline {
                     def json = readJSON text: "$response"
                     def id = json.id
 
-                    sh "mv target/demo-0.0.1-SNAPSHOT.war ${GIT_REPO}-${releaseTag}.war"
+                    sh "cp target/demo-0.0.1-SNAPSHOT.war ${GIT_REPO}-${releaseTag}.war"
 
                     sh """
                         curl -L \
