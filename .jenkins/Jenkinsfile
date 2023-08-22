@@ -22,14 +22,11 @@ pipeline {
                     reuseNode true
                     registryUrl 'https://index.docker.io/v1/'
                     registryCredentialsId 'project-docker-token'
-                }
-            }
-            steps {
-                sh 'mvn clean install'
-                
-                script {
+
+                    sh 'mvn clean install'
                     sh 'sonar-scanner -Dsonar.projectKey=Project01 -Dsonar.sources=src/main/ -Dsonar.tests=src/test/ -Dsonar.java.binaries=target -Dsonar.host.url=http://192.168.10.14:9000'
                 }
+                
                 timeout(time: 1, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
