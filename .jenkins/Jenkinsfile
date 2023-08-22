@@ -11,8 +11,10 @@ pipeline {
     stages {
         stage('Github Clone & Checkout') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/SEOMW/project.git'
+                script {
+                    git branch: 'main',
+                        url: "https://github.com/${GIT_USERNAME}/${GIT_REPO}.git"
+                }
             }
         }
         stage('Build, Test, SonarQube Analysis') {
@@ -29,13 +31,15 @@ pipeline {
                 sh 'mvn clean install -e'
                 
                 script {
-                    sh 'docker run \
+                    withSonarQubeEnv('SonarQube Server') {
+                        sh '''docker run \
                             --rm \
                             -e SONAR_HOST_URL="http://192.168.10.14:9000" \
                             -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=project01" \
                             -e SONAR_TOKEN="squ_8575698766388361f7be927c0cd7fffde808e747" \
                             -v "${GIT_REPO}:/usr/src" \
-                            sonarsource/sonar-scanner-cli'
+                            sonarsource/sonar-scanner-cli'''
+                    }
                 }
                 timeout(time: 1, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
@@ -49,7 +53,7 @@ pipeline {
                     def imageTag = "v${buildNumber}"
                     
                     docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
-                        def image = docker.build('seomw/project-apache', './sample-apache')
+                        def image = docker.build("seomw/project-apache", "./sample-apache")
                         image.push('latest')
                         image.push(imageTag)
                     }
@@ -66,7 +70,7 @@ pipeline {
                     def imageTag = "v${buildNumber}"
 
                     docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
-                        def image = docker.build('seomw/project-nginx', './sample-nginx')
+                        def image = docker.build("seomw/project-nginx", "./sample-nginx")
                         image.push('latest')
                         image.push(imageTag)
                     }
@@ -122,3 +126,4 @@ pipeline {
         }
     }
 }
+
