@@ -8,28 +8,6 @@ pipeline {
     triggers {
         githubPush()
     }
-        stage('Build, Test, SonarQube Analysis') {
-            agent {
-                docker {
-                    image 'maven:3.8.3-openjdk-17'
-                    reuseNode true
-                    registryUrl 'https://index.docker.io/v1/'
-                    registryCredentialsId 'project-docker-token'
-                }
-            }
-            steps {
-                // Maven 빌드
-                sh 'mvn clean install'
-                
-                // 소나큐브 실행
-                script {
-                    sh 'sonar-scanner -Dsonar.projectKey=Project01 -Dsonar.sources=src/main/ -Dsonar.tests=src/test/ -Dsonar.java.binaries=target -Dsonar.host.url=http://192.168.10.14:9000'
-                }
-                timeout(time: 1, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
         stage('Github Clone & Checkout') {
             steps {
                 git branch: 'main',
@@ -112,6 +90,17 @@ pipeline {
                               "https://uploads.github.com/repos/${GIT_USERNAME}/${GIT_REPO}/releases/${id}/assets?name=${GIT_REPO}-${releaseTag}.war" \
                               --data-binary "@${GIT_REPO}-${releaseTag}.war"
                     """
+                }
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    // kubectl 명령어를 사용하여 Kubernetes 클러스터에 배포하는 작업 수행
+                    sh '''
+                        kubectl apply -f path/to/kubernetes/deployment.yaml
+                        kubectl apply -f path/to/kubernetes/service.yaml
+                    '''
                 }
             }
         }
