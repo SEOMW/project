@@ -17,7 +17,7 @@ pipeline {
                 }
             }
         }
-        stage('Build, Test, SonarQube Analysis') {
+        stage('Build, Test, SonarQube Server') {
             agent {
                 docker {
                     image 'maven:3.8.3-openjdk-17'
