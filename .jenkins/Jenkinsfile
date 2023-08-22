@@ -9,7 +9,7 @@ pipeline {
         githubPush()
     }
     stages {
-        stage('maven build, test, packageing(war)') {
+        stage('Build, Test, SonarQube Analysis') {
             agent {
                 docker {
                     image 'maven:3.8.3-openjdk-17'
@@ -20,7 +20,16 @@ pipeline {
                 }
             }
             steps {
+                // Maven 빌드
                 sh 'mvn clean install'
+                
+                // 소나큐브 실행
+                script {
+                    sh 'sonar-scanner -Dsonar.projectKey=Project01 -Dsonar.sources=src/main/ -Dsonar.tests=src/test/ -Dsonar.java.binaries=target -Dsonar.host.url=http://192.168.10.14:9000'
+                }
+                timeout(time: 1, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
             }
         }
         stage('Github Clone & Checkout') {
@@ -30,28 +39,14 @@ pipeline {
                     // credentialsId: 'github-jenkins-cicd'
             }
         }
-        stage('Testing & QC') {
-            steps {
-                script {
-                        sh 'sonar-scanner -Dsonar.projectKey=Project01 -Dsonar.sources=src/main/ -Dsonar.tests=src/test/ -Dsonar.java.binaries=target -Dsonar.host.url=http://192.168.10.14:9000'
-                    }
-                }
-                timeout(time: 1, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
         stage('Docker Build - httpd') {
             steps {
                 script {
                     def buildNumber = env.BUILD_NUMBER
                     def imageTag = "v${buildNumber}"
                     
-                    // Docker hub 에 로그인 하기 위해 사용
                     docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
-                        // Dockerfile 로 이미지 생성
                         def image = docker.build('seomw/project-apache', './sample-apache')
-                        // 이미지를 태그하여 Docker Hub에 푸시
                         image.push('latest')
                         image.push(imageTag)
                     }
@@ -67,11 +62,8 @@ pipeline {
                     def buildNumber = env.BUILD_NUMBER
                     def imageTag = "v${buildNumber}"
 
-                    // Docker hub 에 로그인 하기 위해 사용
                     docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
-                        // Dockerfile 로 이미지 생성
                         def image = docker.build('seomw/project-nginx', './sample-nginx')
-                        // 이미지를 태그하여 Docker Hub에 푸시
                         image.push('latest')
                         image.push(imageTag)
                     }
@@ -103,7 +95,7 @@ pipeline {
                                   "prerelease":false,
                                   "generate_release_notes":false
                               }'
-                    """, returnStdout: true) //스크립트 실행 후 출력 결과를 response 변수에 저장
+                    """, returnStdout: true)
 
                     sh "echo '$response'"
 
@@ -126,3 +118,4 @@ pipeline {
             }
         }
     }
+}
