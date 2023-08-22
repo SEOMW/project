@@ -29,7 +29,7 @@ pipeline {
             }
             steps {
                 script {
-                    withSonarQubeEnv('SonarQube Server') {
+                    withSonarQubeEnv('projectsonar') {
                         sh 'mvn clean install -e'
                         
                         sh 'docker run \
