@@ -35,13 +35,11 @@ pipeline {
                     withSonarQubeEnv('SonarQube Server') {
                         sh 'mvn clean install -e'
                         
-                        sh 'docker run \
-                            --rm \
-                            -e SONAR_HOST_URL="http://192.168.10.14:9000" \
-                            -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=project01 -Dsonar.java.binaries=target" \
-                            -e SONAR_TOKEN="squ_8575698766388361f7be927c0cd7fffde808e747" \
-                            -v "/var/lib/docker/volumes/jenkins-volume/_data/workspaces/jenkins" \
-                            sonarsource/sonar-scanner-cli'
+                        docker.image('sonarsource/sonar-scanner-cli').inside("-e SONAR_HOST_URL=http://192.168.10.14:9000 -e SONAR_SCANNER_OPTS=\"-Dsonar.projectKey=project01 -Dsonar.java.binaries=target\" -e SONAR_TOKEN=\"squ_8575698766388361f7be927c0cd7fffde808e747\"") {
+                            docker.withRun("-v /var/lib/docker/volumes/jenkins-volume/_data/workspaces/jenkins:/usr/src") {
+                                sh 'sonar-scanner'
+                            }
+                        }
                     }
         
                     timeout(time: 1, unit: 'MINUTES') {
