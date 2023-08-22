@@ -8,11 +8,11 @@ pipeline {
     triggers {
         githubPush()
     }
+    stages {
         stage('Github Clone & Checkout') {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/SEOMW/project.git'
-                    // credentialsId: 'github-jenkins-cicd'
             }
         }
         stage('Docker Build - httpd') {
@@ -105,3 +105,4 @@ pipeline {
             }
         }
     }
+}
