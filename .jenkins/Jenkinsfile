@@ -20,7 +20,7 @@ pipeline {
             }
             steps {
                 sh 'chmod +x mvnw' // Make Maven Wrapper executable
-                sh './mvnw clean install'
+                sh 'mvn clean install'
             }
         }
         stage('Github Clone & Checkout') {
