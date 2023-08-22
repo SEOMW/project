@@ -25,10 +25,8 @@ pipeline {
                 }
             }
             steps {
-                // Maven 빌드
                 sh 'mvn clean install'
                 
-                // 소나큐브 실행
                 script {
                     sh 'sonar-scanner -Dsonar.projectKey=Project01 -Dsonar.sources=src/main/ -Dsonar.tests=src/test/ -Dsonar.java.binaries=target -Dsonar.host.url=http://192.168.10.14:9000'
                 }
@@ -112,17 +110,6 @@ pipeline {
                               "https://uploads.github.com/repos/${GIT_USERNAME}/${GIT_REPO}/releases/${id}/assets?name=${GIT_REPO}-${releaseTag}.war" \
                               --data-binary "@${GIT_REPO}-${releaseTag}.war"
                     """
-                }
-            }
-        }
-        stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    // kubectl 명령어를 사용하여 Kubernetes 클러스터에 배포하는 작업 수행
-                    sh '''
-                        kubectl apply -f deployment_httpd.yaml
-                        kubectl apply -f deployment_nginx.yaml
-                    '''
                 }
             }
         }
