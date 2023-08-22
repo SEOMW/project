@@ -17,36 +17,37 @@ pipeline {
                 }
             }
         }
-        stage('Build, Test, SonarQube Server') {
+   stage('maven build, test, packaging(war)') {
             agent {
                 docker {
                     image 'maven:3.8.3-openjdk-17'
-                    args '-u root'
                     reuseNode true
                     registryUrl 'https://index.docker.io/v1/'
                     registryCredentialsId 'project-docker-token'
                 }
             }
+                steps {
+                    sh 'mvn clean install'
+                }     
+        }
+        stage('sonarQube testing') {
             steps {
                 script {
-                    def buildNumber = env.BUILD_NUMBER
-                    def imageTag = "v${buildNumber}"
-                    
-                    withSonarQubeEnv('SonarQube Server') {
-                        sh 'mvn clean install -e'
-                        
-                        docker.image('sonarsource/sonar-scanner-cli').inside("-e SONAR_HOST_URL=http://192.168.10.14:9000 -e SONAR_SCANNER_OPTS=\"-Dsonar.projectKey=project01 -Dsonar.java.binaries=target\" -e SONAR_TOKEN=\"squ_8575698766388361f7be927c0cd7fffde808e747\"") {
-                            docker.withRun("-v /var/lib/docker/volumes/jenkins-volume/_data/workspaces/jenkins:/usr/src") {
-                                sh 'sonar-scanner'
-                            }
-                        }
-                    }
-        
-                    timeout(time: 10, unit: 'MINUTES') {
-                        waitForQualityGate abortPipeline: true
+                    withSonarQubeEnv('sonar') {
+                        sh """
+                            docker run --rm \
+                                -e SONAR_HOST_URL=$SONAR_HOST_URL \
+                                -e SONAR_LOGIN=$SONAR_AUTH_TOKEN \
+                                -e SONAR_SCANNER_OPTS='-Dsonar.projectKey=sonar -Dsonar.java.binaries=./target -Dsonar.verbose=true' \
+                                -v /var/lib/docker/volumes/jenkins-volume/_data/workspace/project:/usr/src \
+                                sonarsource/sonar-scanner-cli
+                        """
                     }
                 }
-            }
+                timeout(time: 3, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }        
         }
         stage('Docker Build - httpd') {
             steps {
