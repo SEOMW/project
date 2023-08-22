@@ -40,7 +40,7 @@ pipeline {
                             -e SONAR_HOST_URL="http://192.168.10.14:9000" \
                             -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=project01 -Dsonar.java.binaries=target" \
                             -e SONAR_TOKEN="squ_8575698766388361f7be927c0cd7fffde808e747" \
-                            -v "${GIT_REPO}:/main/src" \
+                            -v "${GIT_REPO}:/src" \
                             sonarsource/sonar-scanner-cli'
                     }
         
