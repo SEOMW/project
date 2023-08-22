@@ -29,7 +29,7 @@ pipeline {
             }
             steps {
                 script {
-                    withSonarQubeEnv('projectsonar') {
+                    withSonarQubeEnv('SonarQube Server') {
                         sh 'mvn clean install -e'
                         
                         sh 'docker run \
@@ -40,12 +40,14 @@ pipeline {
                             -v "${GIT_REPO}:/usr/src" \
                             sonarsource/sonar-scanner-cli'
                     }
-                }
-                timeout(time: 1, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+        
+                    timeout(time: 1, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: true
+                    }
                 }
             }
         }
+
         stage('Docker Build - httpd') {
             steps {
                 script {
