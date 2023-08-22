@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Clean Up Previous Build') {
             steps {
-                sh 'rm -rf /var/jenkins_home/workspace/project/target'
+                sh 'sudo rm -rf /var/jenkins_home/workspace/project/target'
             }
         }
         stage('Build, Test, SonarQube Analysis') {
