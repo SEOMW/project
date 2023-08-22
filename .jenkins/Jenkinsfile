@@ -32,7 +32,7 @@ pipeline {
                     def buildNumber = env.BUILD_NUMBER
                     def imageTag = "v${buildNumber}"
                     
-                    withSonarQubeEnv('SonarQube Server') {
+                    withSonarQubeEnv('projectsonar') {
                         sh 'mvn clean install -e'
                         
                         sh 'docker run \
