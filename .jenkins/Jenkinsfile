@@ -32,8 +32,9 @@ pipeline {
         stage('Testing & QC') {
             steps {
                 script {
-                    withSonarQubeEnv {
-                            sh 'mvn verify sonar:sonar -Dsonar.java.source=17 -Dsonar.projectKey=Project01 -Dsonar.sources=src/main/ -Dsonar.tests=src/test/ -Dsonar.java.binaries=target -Dsonar.host.url=http://192.168.10.14:9000'
+                    docker.image('maven:3.8.3-openjdk-17').inside('-u root') {
+                        sh 'mvn clean install'
+                        sh 'sonar-scanner -Dsonar.projectKey=Project01 -Dsonar.sources=src/main/ -Dsonar.tests=src/test/ -Dsonar.java.binaries=target -Dsonar.host.url=http://192.168.10.14:9000'
                     }
                 }
                 timeout(time: 1, unit: 'MINUTES') {
