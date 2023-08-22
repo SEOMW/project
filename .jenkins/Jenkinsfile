@@ -29,7 +29,13 @@ pipeline {
                 sh 'mvn clean install -e'
                 
                 script {
-                    sh 'sonar-scanner -Dsonar.projectKey=Project01 -Dsonar.sources=src/main/ -Dsonar.tests=src/test/ -Dsonar.host.url=http://192.168.10.14:9000'
+                    sh 'docker run \
+                            --rm \
+                            -e SONAR_HOST_URL="http://192.168.10.14:9000" \
+                            -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=Project01" \
+                            -e SONAR_TOKEN="squ_8575698766388361f7be927c0cd7fffde808e747" \
+                            -v "${GIT_REPO}:/usr/src" \
+                            sonarsource/sonar-scanner-cli'
                 }
                 timeout(time: 1, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
