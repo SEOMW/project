@@ -88,7 +88,7 @@ pipeline {
             steps {
                 script {
                     def buildNumber = env.BUILD_NUMBER
-                    def releaseTag = "v$0.{buildNumber}.1"
+                    def releaseTag = "v0.${buildNumber}.1"
                     
                     def response = sh(script: """
                         curl -sSL \
