@@ -54,7 +54,7 @@ pipeline {
             steps {
                 script {
                     def buildNumber = env.BUILD_NUMBER
-                    def imageTag = "v${buildNumber}"
+                    def imageTag = "v${buildNumber}.1"
                     
                     docker.withRegistry('https://index.docker.io/v1/', 'project-docker-token') {
                         def image = docker.build("seomw/project-apache", "./sample-apache")
