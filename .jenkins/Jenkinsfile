@@ -63,7 +63,7 @@ pipeline {
                     }
                     sh 'docker stop project-apache'
                     sh 'docker rm project-apache'
-                    sh 'docker run -d -p 8082:80 --name project-apache:(imageTag) seomw/project-apache'
+                    sh 'docker run -d -p 8082:80 --name project-apache seomw/project-apache'
                 }
             }
         }
@@ -80,7 +80,7 @@ pipeline {
                     }
                     sh 'docker stop project-nginx'
                     sh 'docker rm project-nginx'
-                    sh 'docker run -d -p 8081:80 --name project-nginx:(imageTag) seomw/project-nginx'
+                    sh 'docker run -d -p 8081:80 --name project-nginx seomw/project-nginx'
                 }
             }
         }
